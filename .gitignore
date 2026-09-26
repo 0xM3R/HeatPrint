@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.DS_Store
+# downloaded and derived data (fetch with `python -m heatprint download`)
+data/
+# ad-hoc outputs
+results/analyse/
+results/energibridge/scratch/

@@ -1,0 +1,593 @@
+{
+  "carbon": {
+    "flow_temp_saving_kg": {
+      "high": 140.0,
+      "low": 94.0,
+      "mid": 117.0
+    },
+    "jevons": {
+      "compute_kg": 1.3165742907236098e-05,
+      "compute_kwh": 2.6490428384780884e-05,
+      "compute_only_kg": 1.3165742907236098e-05,
+      "energy_basis": "gross J per run (upper bound)",
+      "ratio_saving_to_compute_low": 7139741.423048458,
+      "ratio_saving_to_footprint_low": 21.590666313598053,
+      "reader_kg": 4.35372,
+      "reader_kwh": 8.76,
+      "runs_per_year": 12,
+      "total_kg": 4.3537331657429075
+    },
+    "nl_gas_using_dwellings": 7063300.0,
+    "scale_up_flow_temp": [
+      {
+        "adoption": 0.01,
+        "homes": 70633.0,
+        "kt_co2_per_year": 8.264061
+      },
+      {
+        "adoption": 0.05,
+        "homes": 353165.0,
+        "kt_co2_per_year": 41.320305
+      },
+      {
+        "adoption": 0.1,
+        "homes": 706330.0,
+        "kt_co2_per_year": 82.64061
+      }
+    ],
+    "scale_up_flow_temp_high": [
+      {
+        "adoption": 0.01,
+        "homes": 70633.0,
+        "kt_co2_per_year": 9.88862
+      },
+      {
+        "adoption": 0.05,
+        "homes": 353165.0,
+        "kt_co2_per_year": 49.4431
+      },
+      {
+        "adoption": 0.1,
+        "homes": 706330.0,
+        "kt_co2_per_year": 98.8862
+      }
+    ],
+    "scale_up_flow_temp_low": [
+      {
+        "adoption": 0.01,
+        "homes": 70633.0,
+        "kt_co2_per_year": 6.639502
+      },
+      {
+        "adoption": 0.05,
+        "homes": 353165.0,
+        "kt_co2_per_year": 33.19751
+      },
+      {
+        "adoption": 0.1,
+        "homes": 706330.0,
+        "kt_co2_per_year": 66.39502
+      }
+    ]
+  },
+  "constants": {
+    "CONDENSING_RETURN_MAX": {
+      "note": "Return temperature below which flue-gas water vapour condenses; Dutch sources quote roughly 55-58 degC, the lower bound is used.",
+      "source": "https://zetmop60.nl/veelgestelde-vragen/",
+      "unit": "degC",
+      "value": 55.0,
+      "verified": false
+    },
+    "DEFAULT_DHW_M3_PER_DAY": {
+      "note": "Used only when the data contain no summer days to estimate the baseline.",
+      "source": "Modelling assumption for hot-water gas use",
+      "unit": "m3 gas/day",
+      "value": 0.3,
+      "verified": false
+    },
+    "DESIGN_TE": {
+      "note": "ISSO 51 base design outdoor temperature; the time-constant correction can raise it to -6 degC for heavy, well-insulated dwellings.",
+      "source": "https://www.vitec-vabi.com/nieuws/isso-51-effectenstudie-2017-vs-2023/",
+      "unit": "degC",
+      "value": -10.0,
+      "verified": true
+    },
+    "DESIGN_TE_CORRECTED": {
+      "note": "Upper bound after the ISSO 51 time-constant correction (up to 4 K).",
+      "source": "https://www.vitec-vabi.com/nieuws/isso-51-effectenstudie-2017-vs-2023/",
+      "unit": "degC",
+      "value": -6.0,
+      "verified": true
+    },
+    "DESIGN_TI": {
+      "note": "ISSO 51:2017 default for habitable rooms (the 2023 edition uses 22 degC).",
+      "source": "https://www.vitec-vabi.com/nieuws/isso-51-effectenstudie-2017-vs-2023/",
+      "unit": "degC",
+      "value": 20.0,
+      "verified": true
+    },
+    "ELEC_CO2_GREY": {
+      "note": "Grey electricity 2025, chain emissions included (footprint convention).",
+      "source": "https://co2emissiefactoren.nl/factoren/2025/11/elektriciteit/?unit=kwh",
+      "unit": "kg CO2-eq/kWh",
+      "value": 0.497,
+      "verified": true
+    },
+    "ELEC_CO2_NL_MIX": {
+      "note": "Average Dutch production mix 2025 (Nationaal Energie Dashboard).",
+      "source": "https://ned.nl/nl/achtergrond/jaaroverzicht-2025",
+      "unit": "kg CO2/kWh",
+      "value": 0.209,
+      "verified": true
+    },
+    "FLOW_RETURN_SPLIT": {
+      "note": "Flow minus return temperature held constant when solving for flow temperature.",
+      "source": "Modelling assumption",
+      "unit": "K",
+      "value": 10.0,
+      "verified": false
+    },
+    "GAS_CO2_TTW": {
+      "note": "Natural gas (G-gas), combustion only.",
+      "source": "https://co2emissiefactoren.nl/factoren/2025/27/135/brandstoffen-energieopwekking-gasvormige-brandstoffen-aardgas-g-gas/",
+      "unit": "kg CO2/m3",
+      "value": 1.779,
+      "verified": true
+    },
+    "GAS_CO2_WTW": {
+      "note": "Natural gas (G-gas), well-to-wheel (combustion + supply chain).",
+      "source": "https://co2emissiefactoren.nl/factoren/2025/27/135/brandstoffen-energieopwekking-gasvormige-brandstoffen-aardgas-g-gas/",
+      "unit": "kg CO2-eq/m3",
+      "value": 2.134,
+      "verified": true
+    },
+    "NL_BOILER_EFF": {
+      "note": "Applied to the synthetic Dutch demo home; Dutch boiler stock not verified.",
+      "source": "SMETER P2 DwellingInfo (SAP winter seasonal efficiency, Vaillant ecoTEC pro)",
+      "unit": "- (gross, winter seasonal)",
+      "value": 0.897,
+      "verified": false
+    },
+    "NL_DEGREE_DAY_BASE": {
+      "note": "Base temperature below which space heating is assumed to be required.",
+      "source": "Dutch degree-day convention (graaddagen)",
+      "unit": "degC",
+      "value": 18.0,
+      "verified": false
+    },
+    "NL_DWELLINGS": {
+      "note": "'Bijna 8,3 miljoen woningen'.",
+      "source": "https://www.clo.nl/indicatoren/nl216606-woningvoorraad-naar-bouwjaar-en-woningtype-2025",
+      "unit": "dwellings (1 Jan 2025)",
+      "value": 8300000.0,
+      "verified": true
+    },
+    "NL_GAS_KWH_PER_M3": {
+      "note": "Upper (gross) value of Groningen-quality gas used on Dutch energy bills.",
+      "source": "https://pure-energie.nl/kennisbank/calorische-waarde-van-gas/",
+      "unit": "kWh/m3 (upper value, 35.17 MJ/m3)",
+      "value": 9.769,
+      "verified": true
+    },
+    "NL_SHARE_GAS_FREE": {
+      "note": "",
+      "source": "https://www.cbs.nl/nl-nl/nieuws/2025/50/steeds-meer-woningen-aardgasvrij",
+      "unit": "share of dwellings (2024)",
+      "value": 0.112,
+      "verified": true
+    },
+    "NL_SHARE_HYBRID": {
+      "note": "Nearly gas-free, mostly hybrid heat pumps.",
+      "source": "https://www.cbs.nl/nl-nl/nieuws/2025/50/steeds-meer-woningen-aardgasvrij",
+      "unit": "share of dwellings (2024)",
+      "value": 0.037,
+      "verified": true
+    },
+    "P1_READER_POWER": {
+      "note": "Only relevant when no supplier data export is used.",
+      "source": "Assumption for a P1-port reader running continuously",
+      "unit": "W",
+      "value": 1.0,
+      "verified": false
+    },
+    "RADIATOR_EXPONENT": {
+      "note": "Typical exponent for panel radiators; model-specific values vary.",
+      "source": "EN 442 radiator characteristic",
+      "unit": "-",
+      "value": 1.3,
+      "verified": false
+    },
+    "RADIATOR_NOMINAL_DT": {
+      "note": "Log-mean temperature difference at the EN 442 rating point.",
+      "source": "EN 442 rating point 75/65/20 degC",
+      "unit": "K",
+      "value": 49.83,
+      "verified": true
+    },
+    "SCOP_AIR_WATER": {
+      "note": "Sector sources give 3-4.5 for air-to-water heat pumps in the Netherlands.",
+      "source": "https://www.warmtepompkenner.nl/rendement",
+      "unit": "-",
+      "value": 3.5,
+      "verified": false
+    },
+    "UK_GAS_CV": {
+      "note": "Typical UK calorific value; transporters keep it within 38-41 MJ/m3. The SMETER dataset does not report the CV of the supplied gas.",
+      "source": "https://www.gov.uk/guidance/gas-meter-readings-and-bill-calculation",
+      "unit": "MJ/m3 (gross)",
+      "value": 39.5,
+      "verified": true
+    },
+    "UK_VOLUME_CORRECTION": {
+      "note": "Prescribed by the Gas (Calculation of Thermal Energy) Regulations 1996.",
+      "source": "https://www.gov.uk/guidance/gas-meter-readings-and-bill-calculation",
+      "unit": "-",
+      "value": 1.02264,
+      "verified": true
+    },
+    "ZET_M_OP_60_KG": {
+      "note": "Campaign FAQ: 94-140 kg CO2 per year per participant for 80 -> 60 degC.",
+      "source": "https://zetmop60.nl/veelgestelde-vragen/",
+      "unit": "kg CO2/yr",
+      "value": 117.0,
+      "verified": true
+    }
+  },
+  "demo": {
+    "annual_gas_m3": 1184.3093308141363,
+    "annual_heat_kwh": 9418.331680392797,
+    "calculated_design_kw": 7.92,
+    "co2": {
+      "all_electric_grey_kg": 1337.4030986157773,
+      "all_electric_mix_kg": 562.4089489148841,
+      "all_electric_mix_saving_kg": 1731.2341630424826,
+      "all_electric_saving_kg": 956.2400133415895,
+      "all_electric_saving_share": 0.4169088069353327,
+      "gas_boiler_kg": 2293.6431119573667,
+      "hybrid_kg": 1374.9749296354962,
+      "hybrid_saving_kg": 918.6681823218705
+    },
+    "condensing_share": 0.9988962167830238,
+    "design_kw": 6.679754285989127,
+    "design_kw_corrected": 5.7891203811905765,
+    "dhw_m3_per_day": 0.3,
+    "dhw_source": "default assumption",
+    "fixed_flow_limits": [
+      {
+        "flow": 60.0,
+        "hours_share": 0.9839951433538453,
+        "te_min": -2.568352156292317
+      },
+      {
+        "flow": 55.0,
+        "hours_share": 0.9193134468390408,
+        "te_min": 1.590055353989971
+      },
+      {
+        "flow": 50.0,
+        "hours_share": 0.759816771985982,
+        "te_min": 5.554021816412984
+      }
+    ],
+    "flow_design": 68.46179249675639,
+    "flow_setting": 69.0,
+    "htc": 222.65847619963753,
+    "htc_ci": [
+      215.18983377618403,
+      230.0169250565013
+    ],
+    "htc_error_pct": 1.2083982725625153,
+    "hybrid": [
+      {
+        "coverage": 0.8254266675658359,
+        "size_kw": 2
+      },
+      {
+        "coverage": 0.9607087859789258,
+        "size_kw": 3
+      },
+      {
+        "coverage": 0.9952212717404716,
+        "size_kw": 4
+      },
+      {
+        "coverage": 0.9998903106515774,
+        "size_kw": 5
+      },
+      {
+        "coverage": 1.0,
+        "size_kw": 6
+      },
+      {
+        "coverage": 1.0,
+        "size_kw": 8
+      }
+    ],
+    "hybrid_share": 0.9607087859789258,
+    "hybrid_size_kw": 3.0,
+    "label": "Synthetic Dutch demo home (De Bilt weather, winter 2024-25)",
+    "n_weeks": 20,
+    "nefit_kw": 5.74210584637157,
+    "passed": true,
+    "peak_demand_kw_model": 5.4935988465081635,
+    "period": [
+      "2024-11-01",
+      "2025-04-01"
+    ],
+    "phi_nom_basis": "radiators sized for 80/60 degC at the calculated HTC (assumption)",
+    "phi_nom_w": 8025.348009569108,
+    "r2": 0.9960347235367685,
+    "scop": 3.5,
+    "solar_coef": -3.0070436820202366,
+    "space_heat_gas_error_pct": -4.583339943841304,
+    "space_heat_gas_m3": 1074.8093308141363,
+    "true_space_heat_gas_m3": 1126.4378046575341,
+    "truth": {
+      "boiler_max_w": 24000.0,
+      "ctrl_gain_w_per_k": 3000.0,
+      "dhw_m3_per_day": 0.35,
+      "eff": 0.897,
+      "elec_base_w": 250.0,
+      "elec_evening_w": 400.0,
+      "end": "2025-03-31",
+      "htc_calculated": 264.0,
+      "htc_true": 220.0,
+      "metabolic_w": 80.0,
+      "occupants": 2,
+      "seed": 42,
+      "setpoint_day": 20.0,
+      "setpoint_night": 16.0,
+      "solar_aperture_m2": 3.0,
+      "start": "2024-11-01",
+      "tau_h": 40.0
+    }
+  },
+  "energibridge": {
+    "duration_s_mean": 0.814019453,
+    "gross_j_mean": 7.947128515434265,
+    "idle_power_w": 9.182177084556239,
+    "net_j_per_run": 0.472657747714661,
+    "net_j_sd": 2.911828887898099,
+    "note": "Whole-system energy (EnergiBridge SYSTEM_POWER on macOS) minus idle baseline.",
+    "reps": 10
+  },
+  "validation": {
+    "all": {
+      "coverage": 0.7666666666666667,
+      "gated": 23,
+      "heatprint": {
+        "bias_pct": -2.3970560774907326,
+        "bias_wk": -6.180119801762682,
+        "loa_hi_wk": 53.922179320035454,
+        "loa_lo_wk": -66.28241892356083,
+        "mae_wk": 26.466409450447635,
+        "mape": 13.144971232383877,
+        "median_ape": 12.172940084239304,
+        "n": 23,
+        "pearson_r": 0.6889854745884161,
+        "within_10": 0.30434782608695654,
+        "within_20": 0.8260869565217391
+      },
+      "homes": 30,
+      "in_coheat_ci": 0.6521739130434783,
+      "rdsap_all_homes": {
+        "bias_pct": -1.3918758243179512,
+        "bias_wk": -5.290999999999999,
+        "loa_hi_wk": 62.4028811907597,
+        "loa_lo_wk": -72.9848811907597,
+        "mae_wk": 24.01766666666667,
+        "mape": 12.237790706573712,
+        "median_ape": 10.94772669545339,
+        "n": 30,
+        "pearson_r": 0.5987030011190893,
+        "within_10": 0.4666666666666667,
+        "within_20": 0.9
+      },
+      "rdsap_same_homes": {
+        "bias_pct": -2.3952608879919386,
+        "bias_wk": -6.328695652173911,
+        "loa_hi_wk": 61.79355274767524,
+        "loa_lo_wk": -74.45094405202306,
+        "mae_wk": 23.257391304347824,
+        "mape": 11.19493754105862,
+        "median_ape": 7.887323943661976,
+        "n": 23,
+        "pearson_r": 0.6336656914293174,
+        "within_10": 0.5217391304347826,
+        "within_20": 0.9130434782608695
+      }
+    },
+    "coheat_htc_range": [
+      127.0,
+      269.0
+    ],
+    "data_length_curve": [
+      {
+        "gated_share": 0.7736842105263158,
+        "median_ape": 39.18628357090421,
+        "p75_ape": 69.88674671842823,
+        "weeks": 4,
+        "windows": 570
+      },
+      {
+        "gated_share": 0.8111510791366906,
+        "median_ape": 29.25431389233592,
+        "p75_ape": 50.46089785036979,
+        "weeks": 6,
+        "windows": 556
+      },
+      {
+        "gated_share": 0.7903525046382189,
+        "median_ape": 28.605465257963147,
+        "p75_ape": 45.685739138072606,
+        "weeks": 8,
+        "windows": 539
+      },
+      {
+        "gated_share": 0.7756286266924565,
+        "median_ape": 24.69726710846928,
+        "p75_ape": 41.54460477902229,
+        "weeks": 10,
+        "windows": 517
+      },
+      {
+        "gated_share": 0.7966804979253111,
+        "median_ape": 23.536981055362855,
+        "p75_ape": 37.76978115810516,
+        "weeks": 12,
+        "windows": 482
+      },
+      {
+        "gated_share": 0.8629441624365483,
+        "median_ape": 19.164803945286565,
+        "p75_ape": 30.626762295561402,
+        "weeks": 16,
+        "windows": 394
+      }
+    ],
+    "dev": {
+      "coverage": 0.8,
+      "gated": 12,
+      "heatprint": {
+        "bias_pct": -2.8981842486642067,
+        "bias_wk": -8.37450221093759,
+        "loa_hi_wk": 52.66472855631941,
+        "loa_lo_wk": -69.41373297819459,
+        "mae_wk": 27.02927483922585,
+        "mape": 12.669146658471668,
+        "median_ape": 11.84846492752536,
+        "n": 12,
+        "pearson_r": 0.5605148717928414,
+        "within_10": 0.3333333333333333,
+        "within_20": 0.8333333333333334
+      },
+      "homes": 15,
+      "in_coheat_ci": 0.75,
+      "rdsap_all_homes": {
+        "bias_pct": -6.130240552290292,
+        "bias_wk": -14.600666666666667,
+        "loa_hi_wk": 29.062538295070468,
+        "loa_lo_wk": -58.263871628403805,
+        "mae_wk": 22.268666666666665,
+        "mape": 10.795503106624896,
+        "median_ape": 12.985130111524166,
+        "n": 15,
+        "pearson_r": 0.7893478084141096,
+        "within_10": 0.4,
+        "within_20": 0.9333333333333333
+      },
+      "rdsap_same_homes": {
+        "bias_pct": -6.090957964060364,
+        "bias_wk": -14.645000000000001,
+        "loa_hi_wk": 28.52092822628007,
+        "loa_lo_wk": -57.810928226280076,
+        "mae_wk": 21.394999999999996,
+        "mape": 10.093503898914102,
+        "median_ape": 10.325898389095414,
+        "n": 12,
+        "pearson_r": 0.7854434700461751,
+        "within_10": 0.5,
+        "within_20": 0.9166666666666666
+      }
+    },
+    "example_home": "HH02",
+    "protocol": {
+      "dev_ids": [
+        "HH01",
+        "HH03",
+        "HH05",
+        "HH07",
+        "HH09",
+        "HH11",
+        "HH13",
+        "HH15",
+        "HH17",
+        "HH19",
+        "HH21",
+        "HH23",
+        "HH25",
+        "HH27",
+        "HH29"
+      ],
+      "selected": "weekly@0.5",
+      "selected_matches_package": true,
+      "selection_rule": "lowest development MAPE among variants covering >= 80% of development homes",
+      "test_ids": [
+        "HH02",
+        "HH04",
+        "HH06",
+        "HH08",
+        "HH10",
+        "HH12",
+        "HH14",
+        "HH16",
+        "HH18",
+        "HH20",
+        "HH22",
+        "HH24",
+        "HH26",
+        "HH28",
+        "HH30"
+      ]
+    },
+    "rdsap_overestimates_share": 0.3,
+    "rdsap_vs_coheat_all30": {
+      "bias_pct": -1.3918758243179512,
+      "bias_wk": -5.290999999999999,
+      "loa_hi_wk": 62.4028811907597,
+      "loa_lo_wk": -72.9848811907597,
+      "mae_wk": 24.01766666666667,
+      "mape": 12.237790706573712,
+      "median_ape": 10.94772669545339,
+      "n": 30,
+      "pearson_r": 0.5987030011190893,
+      "within_10": 0.4666666666666667,
+      "within_20": 0.9
+    },
+    "test": {
+      "coverage": 0.7333333333333333,
+      "gated": 11,
+      "heatprint": {
+        "bias_pct": -1.8503707998469423,
+        "bias_wk": -3.7862480826627842,
+        "loa_hi_wk": 57.87613172887205,
+        "loa_lo_wk": -65.44862789419763,
+        "mae_wk": 25.8523744808714,
+        "mape": 13.664052585742656,
+        "median_ape": 13.791724850101486,
+        "n": 11,
+        "pearson_r": 0.7592542089844179,
+        "within_10": 0.2727272727272727,
+        "within_20": 0.8181818181818182
+      },
+      "homes": 15,
+      "in_coheat_ci": 0.5454545454545454,
+      "rdsap_all_homes": {
+        "bias_pct": 3.34648890365439,
+        "bias_wk": 4.018666666666671,
+        "loa_hi_wk": 86.91800172529466,
+        "loa_lo_wk": -78.88066839196131,
+        "mae_wk": 25.766666666666673,
+        "mape": 13.680078306522526,
+        "median_ape": 7.887323943661976,
+        "n": 15,
+        "pearson_r": 0.578443974352615,
+        "within_10": 0.5333333333333333,
+        "within_20": 0.8666666666666667
+      },
+      "rdsap_same_homes": {
+        "bias_pct": 1.6364086495372532,
+        "bias_wk": 2.7436363636363694,
+        "loa_hi_wk": 89.30659435742365,
+        "loa_lo_wk": -83.81932163015091,
+        "mae_wk": 25.289090909090906,
+        "mape": 12.39650151430718,
+        "median_ape": 7.887323943661976,
+        "n": 11,
+        "pearson_r": 0.6459620483556863,
+        "within_10": 0.5454545454545454,
+        "within_20": 0.9090909090909091
+      }
+    }
+  }
+}
